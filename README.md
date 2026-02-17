@@ -43,3 +43,4 @@ flowchart LR
   VER --> DEC
   KS --> DEC
   DEC --> UI
+The system verifies integrity and authenticity before decryption and treats storage and network as untrusted.
