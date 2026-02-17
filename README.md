@@ -1,65 +1,62 @@
-# 🔬 Secure Digital Document Vault - Laboratorio
+## 2. Architecture Diagram (Required)
 
-## 1. System Overview (Descripción General)
-
-En un entorno de laboratorio, la integridad de los resultados y la confidencialidad de los documentos son críticas.  
-Este sistema protege documentos sensibles contra acceso no autorizado y modificaciones maliciosas durante su almacenamiento o envío.
-
-### Funcionalidades principales
-
-- **Cifrado de archivos:** Solo el destinatario puede leer el contenido.
-- **Firmas digitales:** Permiten verificar el autor y detectar modificaciones.
-- **Gestión de llaves:** Las llaves privadas se protegen con contraseña.
-- **Intercambio seguro:** Un archivo puede compartirse con múltiples destinatarios.
-
-### Fuera de alcance
-
-- Seguridad física del equipo
-- Recuperación de contraseña olvidada
-
----
-
-## 2. Architecture Diagram (Diagrama de Arquitectura)
-
-El siguiente diagrama muestra los componentes, límites de confianza y flujo principal del sistema.
+The following diagram shows the complete system architecture, including trusted and untrusted components, key storage, encryption, signing, and full data flow.
 
 ```mermaid
 flowchart LR
 
-  %% ===== ENTIDADES =====
-  U1[Investigador A - Emisor]
-  U2[Investigador B - Receptor]
+  %% ================= TRUST BOUNDARIES =================
+  subgraph TRUSTED_USER[Trusted - User Environment]
+    U[User]
+    UI[Vault Application (Frontend/UI)]
 
-  %% ===== ZONA CONFIABLE =====
-  subgraph TRUSTED[Zona Confiable - Vault App]
-    UI[Aplicación Vault]
-    KM[Key Manager\nProtege llaves con contraseña]
-    SIGN[Firma Digital]
-    ENC[Cifrado]
-    PKG[Contenedor Seguro]
-    VER[Verificación]
-    DEC[Descifrado]
+    KS[Key Store (Encrypted Private Keys)\nProtected with Password]
+
+    SIGN[Signing Module\n(Digital signature happens here)]
+    ENC[Encryption Module\n(Encryption happens here)]
+
+    VER[Signature Verification Module]
+    DEC[Decryption Module]
   end
 
-  %% ===== ZONA NO CONFIABLE =====
-  subgraph UNTRUSTED[Zona No Confiable]
-    STORE[(Disco / USB / Nube)]
-    NET[[Red / Canal de envío]]
+  subgraph TRUSTED_BACKEND[Trusted - Vault Service]
+    API[Vault Backend / API\nHandles storage, metadata, sharing workflow]
   end
 
-  %% ===== FLUJO EMISOR =====
-  U1 -->|Selecciona archivo| UI
-  UI --> KM
-  KM --> SIGN
-  SIGN --> ENC
-  ENC --> PKG
-  PKG --> STORE
-  PKG --> NET
+  subgraph UNTRUSTED[Untrusted Environment]
+    ST[(Storage - Local Disk / Cloud)]
+    NET[[Network / Transport Channel]]
+  end
 
-  %% ===== FLUJO RECEPTOR =====
-  STORE --> UI
-  NET --> UI
-  UI --> VER
-  VER --> DEC
-  KM --> DEC
-  DEC --> U2
+  PK[Public Keys / Recipients]
+
+  %% ================= SEND / CREATE FLOW =================
+
+  U -->|Select file to protect| UI
+
+  UI -->|Unlock keys with password| KS
+  KS -->|Sender private key (in memory)| SIGN
+
+  UI -->|Plain document| SIGN
+  SIGN -->|Document + Signature| ENC
+
+  PK -->|Recipients public keys| ENC
+
+  ENC -->|Encrypted File Container| UI
+  UI -->|Send container to backend| API
+
+  API -->|Store container| ST
+  API -->|Share container| NET
+
+  %% ================= RECEIVE FLOW =================
+
+  NET -->|Receive container| UI
+  ST -->|Fetch stored container| API
+  API -->|Deliver container| UI
+
+  UI -->|Verify signature first| VER
+  VER -->|If valid| DEC
+
+  KS -->|Recipient private key (in memory)| DEC
+  DEC -->|Recovered plaintext document| UI
+
