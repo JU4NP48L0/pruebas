@@ -2,8 +2,7 @@
 
 ## 1. System Overview (Descripción General)
 
-En un entorno de laboratorio, la integridad de los resultados y la confidencialidad de los documentos son críticas.  
-Este sistema protege documentos sensibles contra acceso no autorizado y modificaciones maliciosas durante su almacenamiento o envío.
+En un entorno de laboratorio, los resultados de experimentos y bitácoras de investigación son activos críticos que deben protegerse contra el acceso no autorizado y la manipulación accidental o malintencionada. Este sistema resuelve esto proporcionando un contenedor seguro para estos documentos.
 
 ### Funcionalidades principales
 
@@ -16,6 +15,7 @@ Este sistema protege documentos sensibles contra acceso no autorizado y modifica
 
 - Seguridad física del equipo
 - Recuperación de contraseña olvidada
+- Seguridad de la red (firewalls o detección de intrusos).
 
 ---
 
@@ -33,7 +33,7 @@ flowchart LR
   %% ===== ZONA CONFIABLE =====
   subgraph TRUSTED[Zona Confiable - Vault App]
     UI[Aplicación Vault]
-    KM[Key Manager\nProtege llaves con contraseña]
+    KM[Key Manager<br/>Protege llaves con contraseña]
     SIGN[Firma Digital]
     ENC[Cifrado]
     PKG[Contenedor Seguro]
@@ -63,3 +63,17 @@ flowchart LR
   VER --> DEC
   KM --> DEC
   DEC --> U2
+```
+
+---
+
+## 3. Requerimientos de seguridad
+El sistema debe cumplir con propiedades específicas para garantizar la validez científica de los documentos:
+
+1. Confidencialidad de los archivos: Un atacante que obtenga el contenedor cifrado no debe poder leer el contenido de los resultados de los experimentos sin la llave privada correcta.
+
+2. Integridad del contenido: El sistema debe detectar si un reporte de laboratorio ha sido modificado, aunque sea por un solo bit, después de ser guardado.
+
+3. Autenticidad del investigador: Debe ser posible verificar que un resultado fue generado por un científico específico y no por un tercero suplantando su identidad. Ademas de verificar que la decriptacino debe ser por personal autorizado
+
+4. Protección de llaves privadas: Las llaves que permiten el acceso al baúl nunca deben almacenarse en texto plano y deben estar protegidas contra intentos de adivinanza.
