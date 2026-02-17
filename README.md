@@ -1,29 +1,29 @@
-## 2. Architecture Diagram (Required)
+## 2. Diagrama de Arquitectura
 
 ```mermaid
 flowchart LR
 
-  subgraph TRUSTED_USER[Trusted - User Environment]
-    U[User]
-    UI[Vault Application Frontend]
-    KS[Key Store Encrypted Private Keys]
-    SIGN[Signing Module]
-    ENC[Encryption Module]
-    VER[Signature Verification]
-    DEC[Decryption Module]
+  subgraph TRUSTED_USER[Confiable - Entorno del Usuario]
+    U[Usuario]
+    UI[Aplicacion Vault Frontend]
+    KS[Key Store Llaves Privadas Cifradas]
+    SIGN[Modulo de Firma Digital]
+    ENC[Modulo de Cifrado]
+    VER[Verificacion de Firma]
+    DEC[Modulo de Descifrado]
   end
 
-  subgraph TRUSTED_BACKEND[Trusted - Vault Service]
-    API[Vault Backend API]
+  subgraph TRUSTED_BACKEND[Confiable - Servicio Vault]
+    API[Backend Vault API]
   end
 
-  subgraph UNTRUSTED[Untrusted - Storage and Network]
-    ST[(Storage Local or Remote)]
-    NET[[Network Transport]]
+  subgraph UNTRUSTED[No Confiable - Almacenamiento y Red]
+    ST[(Almacenamiento Local o Remoto)]
+    NET[[Transporte por Red]]
   end
 
-  PK[Recipients Public Keys]
-  C[Encrypted File Container]
+  PK[Llaves Publicas de Destinatarios]
+  C[Contenedor de Archivo Cifrado]
 
   U --> UI
   UI --> KS
@@ -43,4 +43,3 @@ flowchart LR
   VER --> DEC
   KS --> DEC
   DEC --> UI
-The system verifies integrity and authenticity before decryption and treats storage and network as untrusted.
