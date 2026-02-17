@@ -1,7 +1,5 @@
 ## 2. Architecture Diagram (Required)
 
-The following diagram shows the complete system architecture, including trusted and untrusted components, key storage, encryption, signing, and full data flow.
-
 ```mermaid
 flowchart LR
 
@@ -9,54 +7,44 @@ flowchart LR
   subgraph TRUSTED_USER[Trusted - User Environment]
     U[User]
     UI[Vault Application (Frontend/UI)]
-
     KS[Key Store (Encrypted Private Keys)\nProtected with Password]
-
-    SIGN[Signing Module\n(Digital signature happens here)]
+    SIGN[Signing Module\n(Sign happens here)]
     ENC[Encryption Module\n(Encryption happens here)]
-
-    VER[Signature Verification Module]
+    VER[Signature Verification]
     DEC[Decryption Module]
   end
 
+  %% If your team treats the backend as trusted, keep it here.
+  %% If your team treats the backend as untrusted storage-only, move it to UNTRUSTED.
   subgraph TRUSTED_BACKEND[Trusted - Vault Service]
-    API[Vault Backend / API\nHandles storage, metadata, sharing workflow]
+    API[Vault Backend / API\nSharing + storage workflow]
   end
 
-  subgraph UNTRUSTED[Untrusted Environment]
-    ST[(Storage - Local Disk / Cloud)]
-    NET[[Network / Transport Channel]]
+  subgraph UNTRUSTED[Untrusted - Storage / Network]
+    ST[(Storage - Local/Remote)]
+    NET[[Network / Transport]]
   end
 
   PK[Public Keys / Recipients]
+  C[Encrypted File Container\n(Ciphertext + signature + protected metadata)]
 
-  %% ================= SEND / CREATE FLOW =================
-
-  U -->|Select file to protect| UI
-
-  UI -->|Unlock keys with password| KS
-  KS -->|Sender private key (in memory)| SIGN
-
+  %% ================= CREATE / SHARE =================
+  U -->|Select file + recipients| UI
+  UI -->|Unlock keys (password)| KS
+  KS -->|Sender private key (in-memory)| SIGN
   UI -->|Plain document| SIGN
-  SIGN -->|Document + Signature| ENC
-
+  SIGN -->|Document + signature| ENC
   PK -->|Recipients public keys| ENC
+  ENC --> C
+  C -->|Upload/store| API
+  API --> ST
+  API --> NET
 
-  ENC -->|Encrypted File Container| UI
-  UI -->|Send container to backend| API
-
-  API -->|Store container| ST
-  API -->|Share container| NET
-
-  %% ================= RECEIVE FLOW =================
-
+  %% ================= RECEIVE / VERIFY / DECRYPT =================
   NET -->|Receive container| UI
-  ST -->|Fetch stored container| API
+  ST -->|Fetch container| API
   API -->|Deliver container| UI
-
-  UI -->|Verify signature first| VER
+  UI -->|Verify first| VER
   VER -->|If valid| DEC
-
-  KS -->|Recipient private key (in memory)| DEC
-  DEC -->|Recovered plaintext document| UI
-
+  KS -->|Recipient private key (in-memory)| DEC
+  DEC -->|Plain document| UI
