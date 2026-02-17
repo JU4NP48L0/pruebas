@@ -1,4 +1,4 @@
-## 2. Diagrama de Arquitectura (Requerido)
+## 2. Diagrama de Arquitectura
 
 ```mermaid
 flowchart LR
@@ -21,32 +21,30 @@ flowchart LR
 
   subgraph UNTRUSTED[No Confiable - Almacenamiento y Red]
     direction TB
-    SP1[ ]:::invisible
-    SP2[ ]:::invisible
     ST[(Almacenamiento Local o Remoto)]
     NET[[Transporte por Red]]
   end
 
-  classDef invisible fill:#ffffff,stroke:#ffffff,color:#ffffff,fill-opacity:0,stroke-opacity:0;
-
   PK[Llaves Publicas de Destinatarios]
   C[Contenedor de Archivo Cifrado]
 
-  U --> UI
-  UI --> KS
-  KS --> SIGN
-  UI --> SIGN
-  SIGN --> ENC
-  PK --> ENC
-  ENC --> C
-  C --> API
-  API --> ST
-  API --> NET
+  %% Flujo de creacion
+  U -->|Selecciona archivo| UI
+  UI -->|Desbloquea llaves con contraseña| KS
+  KS -->|Llave privada en memoria| SIGN
+  UI -->|Documento en claro| SIGN
+  SIGN -->|Documento firmado| ENC
+  PK -->|Llaves publicas| ENC
+  ENC -->|Contenedor cifrado| C
+  C -->|Enviar| API
+  API -->|Guardar| ST
+  API -->|Transmitir| NET
 
-  NET --> UI
-  ST --> API
+  %% Flujo de recepcion
+  NET -->|Recibir contenedor| UI
+  ST -->|Obtener contenedor| API
   API --> UI
-  UI --> VER
-  VER --> DEC
-  KS --> DEC
-  DEC --> UI
+  UI -->|Verificar firma| VER
+  VER -->|Si es valido| DEC
+  KS -->|Llave privada en memoria| DEC
+  DEC -->|Documento recuperado| UI
