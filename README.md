@@ -24,9 +24,13 @@ flowchart LR
   %% ===== ENTORNO NO CONFIABLE =====
   subgraph UNTRUSTED[No Confiable - Almacenamiento y Red]
     direction TB
+    SP1[ ]:::invisible
+    SP2[ ]:::invisible
     ST[(Almacenamiento Local o Remoto)]
     NET[[Transporte por Red]]
   end
+
+  classDef invisible fill=transparent,stroke=transparent,color=transparent;
 
   PK[Llaves Publicas de Destinatarios]
   C[Contenedor de Archivo Cifrado]
