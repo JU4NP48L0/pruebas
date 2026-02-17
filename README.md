@@ -3,48 +3,43 @@
 ```mermaid
 flowchart LR
 
-  %% ================= TRUST BOUNDARIES =================
   subgraph TRUSTED_USER[Trusted - User Environment]
     U[User]
-    UI[Vault Application (Frontend/UI)]
-    KS[Key Store (Encrypted Private Keys)\nProtected with Password]
-    SIGN[Signing Module\n(Sign happens here)]
-    ENC[Encryption Module\n(Encryption happens here)]
+    UI[Vault Application Frontend]
+    KS[Key Store Encrypted Private Keys]
+    SIGN[Signing Module]
+    ENC[Encryption Module]
     VER[Signature Verification]
     DEC[Decryption Module]
   end
 
-  %% If your team treats the backend as trusted, keep it here.
-  %% If your team treats the backend as untrusted storage-only, move it to UNTRUSTED.
   subgraph TRUSTED_BACKEND[Trusted - Vault Service]
-    API[Vault Backend / API\nSharing + storage workflow]
+    API[Vault Backend API]
   end
 
-  subgraph UNTRUSTED[Untrusted - Storage / Network]
-    ST[(Storage - Local/Remote)]
-    NET[[Network / Transport]]
+  subgraph UNTRUSTED[Untrusted - Storage and Network]
+    ST[(Storage Local or Remote)]
+    NET[[Network Transport]]
   end
 
-  PK[Public Keys / Recipients]
-  C[Encrypted File Container\n(Ciphertext + signature + protected metadata)]
+  PK[Recipients Public Keys]
+  C[Encrypted File Container]
 
-  %% ================= CREATE / SHARE =================
-  U -->|Select file + recipients| UI
-  UI -->|Unlock keys (password)| KS
-  KS -->|Sender private key (in-memory)| SIGN
-  UI -->|Plain document| SIGN
-  SIGN -->|Document + signature| ENC
-  PK -->|Recipients public keys| ENC
+  U --> UI
+  UI --> KS
+  KS --> SIGN
+  UI --> SIGN
+  SIGN --> ENC
+  PK --> ENC
   ENC --> C
-  C -->|Upload/store| API
+  C --> API
   API --> ST
   API --> NET
 
-  %% ================= RECEIVE / VERIFY / DECRYPT =================
-  NET -->|Receive container| UI
-  ST -->|Fetch container| API
-  API -->|Deliver container| UI
-  UI -->|Verify first| VER
-  VER -->|If valid| DEC
-  KS -->|Recipient private key (in-memory)| DEC
-  DEC -->|Plain document| UI
+  NET --> UI
+  ST --> API
+  API --> UI
+  UI --> VER
+  VER --> DEC
+  KS --> DEC
+  DEC --> UI
